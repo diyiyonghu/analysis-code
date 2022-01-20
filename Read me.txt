@@ -1,0 +1,9 @@
+We uploaded 4 codes to get and analyse data in this paper.
+1. Google_geocoding was used to get the longitude and latitude in R (version 3.0.0).
+
+2.Google earth engine code of code_NDVI was used to get the NDVI data.
+
+3. Figure 4,6,8 code was used to draw figures 4,6,8 using R software (version 3.5.1).
+4. Figure 5,7,9 code was used to draw figures 5,7,9 using R software (version 3.5.1).
+
+5.Data used in the third and fourth code  can be freely accessed via the Science Data Bank at http://doi.org/10.11922/sciencedb.0072.

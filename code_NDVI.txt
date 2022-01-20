@@ -1,0 +1,79 @@
+//0. Load features with child care center (feature points)
+var center_pts = ee.FeatureCollection('users/Data/center');
+
+//1. define ROI
+var ROI = ee.Geometry.Rectangle(112, -44, 154, -10);  //Australia region
+Map.addLayer(ROI,{color: 'grey'}, 'ROI');
+Map.centerObject(ROI);
+
+//2. calculaye maximum NDVI 
+var collection = ee.ImageCollection('MODIS/006/MOD13Q1')
+                  .select('NDVI');
+
+function addNDVI(roi,year) {
+  //year
+  var datelist = ee.List([year+'-01-01',year+'-01-17',year+'-02-02',year+'-02-18',year+'-12-03',year+'-12-19'])
+  .map(function(date){return ee.Date(date).millis()});
+  
+  var yearNum = ee.Number.parse(year);
+  var fname = 'NDVI'+ year;
+  print (fname);
+  
+  //max(NDVI)
+  var reference = collection.filter(ee.Filter.inList("system:time_start", datelist)).filterBounds(roi);
+  var greenest = reference.qualityMosaic('NDVI').clip(roi);
+  var ndviMax = greenest.select('NDVI').rename(fname);
+  var ndvi_Ymax = ndviMax.setMulti({
+  Name: fname,
+  year: year,
+  'system:time_start':yearNum,
+});
+  // cast it
+  ndvi_Ymax = ee.Image(ndvi_Ymax);
+  
+  //return: Maximum NDVI in summer
+  return ndvi_Ymax;
+}
+
+///////////////////3. extract data for each year/////////////////////////
+// Maximum NDVI in 2013
+var y2013 = addNDVI(ROI, '2013');
+
+// Maximum NDVI in 2014
+var y2014 = addNDVI(ROI, '2014');
+
+// Year 2015
+var y2015 = addNDVI(ROI, '2015');
+
+// Year 2016
+var y2016 = addNDVI(ROI, '2016');
+
+// Year 2017
+var y2017 = addNDVI(ROI, '2017');
+
+// Year 2018
+var y2018 = addNDVI(ROI, '2018');
+
+// Year 2019
+var y2019 = addNDVI(ROI, '2019');
+print(y2015);
+
+var combined_img = ee.ImageCollection([y2013,y2014,y2015,y2016,y2017,y2018,y2019]).toBands();
+print(combined_img);
+
+//NDVI extraction by center points
+var ndviFeatures = combined_img.reduceRegions({
+  collection: center_pts,
+  reducer: ee.Reducer.mean(),
+  scale: 250,
+});
+print(ndviFeatures);
+
+// 4. Export data as csv
+Export.table.toDrive({
+  collection: ndviFeatures,
+  selectors: ['NDVI2013', 'NDVI2014','NDVI2015','NDVI2016','NDVI2017','NDVI2018','NDVI2019','xuID'],
+  folder: 'GEEdata',
+  description: 'NDVI_maximum_2013to2019',
+  fileFormat: 'CSV'
+});

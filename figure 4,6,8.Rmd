@@ -1,0 +1,122 @@
+---
+title: "Plot the road density of Australia child care centers"
+output: html_document
+---
+ install.packages("tibble")
+ install.packages("tidyverse")
+ 
+ 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+library(tibble)
+```{r,echo=TRUE}
+rm(list = ls())
+library(dplyr)
+library(ggplot2)
+library(ggsci)
+library(tidyverse)
+```
+
+```{r}
+mydata<-read.csv("Dataset 1.csv",encoding = "UTF-8")
+
+```
+
+## Plot for distance to main road and motorway
+```{r,fig.height=4,fig.width=6}
+
+distance_data<-mydata%>%
+  select(State,dismain,dismotorway)%>%
+  pivot_longer(cols = c(dismain,dismotorway),names_to="variable")%>%
+  mutate(variable=as.factor(variable))
+str(distance_data)
+levels(distance_data$variable)<-c("main road","motorway")
+
+distance_data$State<-factor(distance_data$State, levels=c("WA","SA","ACT","VIC","NSW","QLD","TAS","NT"))
+fig_distance<-ggplot(distance_data,aes(x=State,y=value,color=variable))+
+  geom_boxplot()+
+  scale_y_log10()+##set y-axis in log scale, as there many extreme values
+  labs(x="State",y="Nearest distance to main road or motorway (meters)",color="")+
+   theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.background = element_blank())+
+  theme_classic(base_size = 20)+
+    scale_color_lancet()
+
+fig_distance
+
+```
+
+```{r}
+## save the fig
+ggsave("figure 4.png",width = 12, height = 7.5)## select a suitable width and height by yourself
+```
+
+```{r,fig.height=4,fig.width=6}
+
+distance_data<-mydata%>%
+  select(OverallRat,dismain,dismotorway)%>%
+  pivot_longer(cols = c(dismain,dismotorway),names_to="variable")%>%
+  mutate(variable=as.factor(variable))
+str(distance_data)
+levels(distance_data$variable)<-c("main road","motorway")
+
+distance_data$OverallRat<-factor(distance_data$OverallRat,levels = c("WT","EXD","EXT","MT","SIR","NA"))
+fig_distance<-ggplot(distance_data,aes(x=OverallRat,y=value,color=variable))+
+  geom_boxplot()+
+  scale_y_log10()+##set y-axis in log scale, as there many extreme values
+  labs(x="Overall rate",y="Nearest distance to main road or motorway (meters)",color="")+
+   theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.background = element_blank())+
+  theme_classic(base_size = 20)+
+    scale_color_lancet()
+fig_distance
+
+```
+
+
+```{r}
+## save the fig
+ggsave("figure 6.png",width = 12, height = 7.5)## select a suitable width and height by yourself
+```
+
+```{r,fig.height=4,fig.width=6}
+
+distance_data<-mydata%>%
+  select(type,dismain,dismotorway)%>%
+  pivot_longer(cols = c(dismain,dismotorway),names_to="variable")%>%
+  mutate(variable=as.factor(variable))
+str(distance_data)
+levels(distance_data$variable)<-c("main road","motorway")
+
+distance_data$type<-factor(distance_data$type,levels=c("2","4","7","3","8","1","5","6"))
+fig_distance<-ggplot(distance_data,aes(x=type,y=value,color=variable))+
+  geom_boxplot()+
+  scale_y_log10()+##set y-axis in log scale, as there many extreme values
+  labs(x="Type",y="Nearest distance to main road or motorway (meters)",color="")+
+   theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.background = element_blank())+
+  theme_classic(base_size = 20)+
+    scale_color_lancet()
+fig_distance
+
+```
+
+```{r}
+## save the fig
+ggsave("figure 8.png",width = 12, height = 7.5)## select a suitable width and height by yourself
+```
+
+

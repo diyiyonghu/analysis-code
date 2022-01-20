@@ -1,0 +1,115 @@
+---
+title: "childhood study"
+author: "Alven"
+date: "2021/2/20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+
+library(reshape2)
+library(stringr)
+library(dplyr)
+library(ggsci)
+library(data.table)
+library(ggthemes)
+```
+
+```{r}
+## need not run
+setwd("C:/Users/SURFACE/Desktop/paper google/修改稿-荣彬/r code")
+
+## load data
+```{r}
+childhood <- read.csv(file = "Dataset 1.csv")
+childhood$type <- as.factor(childhood$type)
+childhood$State<-as.factor(childhood$State)
+childhood$OverallRat<-as.factor(childhood$OverallRat)
+```
+
+## Choose the subset
+```{r}
+childhood_sub <- childhood[,c("X","type","State","OverallRat","main_50","main_100","main_300","main_500","main_1000","moto_50","moto_100","moto_300","moto_500","moto_1000")]
+
+
+## reshape the data
+
+
+childhood_sub_melt <- melt(childhood_sub,id.vars = c("X","type","State","OverallRat")) # change to long data
+# set the classification to main/moto
+childhood_sub_melt$class <- ifelse(childhood_sub_melt$variable %in% c("main_50","main_100","main_300","main_500","main_1000")==TRUE, 1, 0)
+childhood_sub_melt$class <- factor(childhood_sub_melt$class,levels = c(0,1), labels = c("Motor","Main"))
+# change the "variable" to "meters": stract numbers 
+childhood_sub_melt$meters <- stringr::str_extract(childhood_sub_melt$variable,"[0-9]+")
+childhood_sub_melt$meters <- factor(childhood_sub_melt$meters,levels = c("50","100","300","500","1000"))
+``
+#figure 5 from rongbin
+data<-childhood_sub_melt
+data<-filter(data,value>0)
+data$value_level<-cut(data$value,breaks = c(-1,50,100,300,500,1000,20000),na.rm=TRUE)## chose a suitable breaks by yourself to make the figure beautiful
+levels(data$value_level)
+levels(data$value_level)<-c("(0,50]","(50,100]","(100,300]","(300,500]","(500,1000]",">1000")  ## relabel levels
+levels(data$meter) 
+
+levels(data$meter)<-c("50m buffer","100m buffer","300m buffer","500m buffer","1000m buffer")
+data$State<-factor(data$State, levels=c("TAS","NT","ACT","SA","WA","QLD","VIC","NSW"))
+figure_distance<-ggplot(data = data, 
+       aes(x = State, fill = value_level ))+
+        geom_bar(stat = "count") +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.background = element_rect(fill="transparent",color = "transparent"),
+    axis.line = element_line(colour = "black"),
+    legend.background = element_blank())+ 
+  theme_classic(base_size = 20)+
+  labs(x="State",y="Number of childcare centres ",fill="Length of road (m)")+scale_fill_lancet()+
+   facet_grid(class ~meter)
+
+
+figure_distance
+ggsave("figure 5.png",width = 24, height = 9.77)
+
+
+#figure 7 from rongbin
+data$OverallRat<-factor(data$OverallRat,levels=c("SIR","EXT","WT","EXD","MT","NA"))
+figure_distance<-ggplot(data = data, 
+       aes(x = OverallRat, fill = value_level ))+
+        geom_bar(stat = "count") +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.background = element_blank())+
+  theme_classic(base_size = 20)+
+  labs(x="Overall rate",y="Number. of childcare centres ",fill="Length of road (m)")+scale_fill_lancet()+
+   facet_grid(class ~meter)
+
+figure_distance
+ggsave("figure 7.png",width = 24, height = 9.77)
+
+
+
+#figure 9 from rongbin
+data$type<-factor(data$type,levels=c("1","5","2","3","6","8","7","4"))
+figure_distance<-ggplot(data = data, 
+       aes(x = type, fill = value_level ))+
+        geom_bar(stat = "count") +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.background = element_blank())+ labs(x="Type",y="Number. of childcare centres ",fill="Length of road (m)")+scale_fill_lancet()+
+  theme_classic(base_size = 20)+
+   facet_grid(class ~meter)
+
+figure_distance
+ggsave("figure 9.png",width = 24, height = 9.77)
+
+
+
+
